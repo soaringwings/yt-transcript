@@ -6,6 +6,6 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-module.exports = {
-  basePath: '/app',
-}
+// module.exports = {
+//   basePath: '/app',
+// }
