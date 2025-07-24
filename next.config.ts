@@ -7,5 +7,5 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 
 module.exports = {
-  basePath: 'app',
+  basePath: '/app',
 }
