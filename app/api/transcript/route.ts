@@ -66,8 +66,8 @@ export async function POST(request: Request) {
         output: tmpVtt,
         // verbose: false,
         });
-
-        const tmpDir = os.tmpdir();
+        console.log(await fs.readdir(os.tmpdir()));
+        // const tmpDir = os.tmpdir();
         // const files = await fs.readdir(tmpDir);
         // console.log(files);
         console.log(tmpVtt);
