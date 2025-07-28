@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         // const tmpVtt = path.join(os.tmpdir(), "%(title)s.%(ext)s");
         await ytdlp(url, {
         skipDownload: true,
-        writeAutoSub: true,
+        // writeAutoSub: true,
         subLang: "en",
         subFormat: "vtt",
         writeSub: true,
