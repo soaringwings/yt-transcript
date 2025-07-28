@@ -40,7 +40,7 @@ import path from "path";
 import os from "os";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore – no types for node-webvtt
-import webvtt from "node-webvtt";
+// import webvtt from "node-webvtt";
 
 // import ytdlp from "youtube-dl-exec";
 import { create as createYoutubeDl } from "youtube-dl-exec";
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         // const tmpVtt = path.join(os.tmpdir(), "%(title)s.%(ext)s");
         await ytdlp(url, {
         skipDownload: true,
-        // writeAutoSub: true,
+        writeAutoSub: true,
         subLang: "en",
         subFormat: "vtt",
         writeSub: true,
@@ -70,12 +70,24 @@ export async function POST(request: Request) {
         const tmpDir = os.tmpdir();
         // const files = await fs.readdir(tmpDir);
         // console.log(files);
+        console.log(tmpVtt);
 
-        const vttPath = tmpVtt.replace("%(ext)s", "en.vtt");
+        const manual = tmpVtt.replace("%(ext)s", "en.vtt");
+        const auto = tmpVtt.replace("%(ext)s", "auto.en.vtt");
         // console.log(vttPath);
-        
+
+        let vttRaw: string;
+        try {
+            vttRaw = await fs.readFile(manual, "utf8");
+        } catch (err: any) {
+            vttRaw = await fs.readFile(auto, "utf8");
+            console.error(err);
+        }
+
+        try { await fs.unlink(manual); } catch {}
+        try { await fs.unlink(auto); } catch {}
         // const vttRaw = await fs.readFile(`${tmpDir}/Me\ at\ the\ zoo.en.vtt`, "utf8");
-        const vttRaw = await fs.readFile(`${vttPath}`, "utf8");
+        // const vttRaw = await fs.readFile(`${vttPath}`, "utf8");
         // await fs.unlink(vttPath);
 
         // const cues = (webvtt.parse(vttRaw).cues as Array<{ text: string }>).map(c => c.text).join("\n");
