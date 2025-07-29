@@ -1,38 +1,3 @@
-// import { NextResponse } from "next/server";
-// import ytdlp from "youtube-dl-exec";
-// import { promises as fs } from "fs";
-// import path from "path";
-// import os from "os";
-// // import WebVTT from "webvtt";
-// import webvtt from "node-webvtt";
-
-// export async function POST(request: Request) {
-//     const { url } = await request.json();
-//     if(!url) return NextResponse.json({ error: "URL: missing" }, { status: 400 });
-
-//     const tmpVtt = path.join(os.tmpdir(), `subs-${Date.now()}.%(ext)s`);
-// // run yt-dlp 
-//     await ytdlp(url, {
-//         skipDownload: true,
-//         writeAutoSub: true,
-//         subLang: "en",
-//         subFormat: "vtt",
-//         output: tmpVtt,
-//         verbose: false,
-//     });
-
-//     const vttPath = tmpVtt.replace("%(ext)s", "en.vtt");
-//     const vttRaw = await fs.readFile(vttPath, "utf8");
-//     await fs.unlink(vttPath);
-
-//     // const cues = WebVTT.parse(vttRaw).cues.map(c => c.text).join("\n");
-//     const cues = (webvtt.parse(vttRaw).cues as Array<{ text: string }>).map((c) => c.text).join("\n");
-
-//     return NextResponse.json({ transcript: cues });
-// }
-// File created at /Users/edward/my-app/types/node-webvtt.d.ts
-// declare module 'node-webvtt';
-// app/api/transcript/route.ts
 import { NextResponse } from "next/server";
 
 import { promises as fs } from "fs";
@@ -55,43 +20,49 @@ export async function POST(request: Request) {
         if (!url) {
         return NextResponse.json({ error: "Missing URL" }, { status: 400 });
         }
-        const tmpVtt = path.join(os.tmpdir(), `subs-${Date.now()}.%(ext)s`);
+
+        const tmpDir = os.tmpdir();
+        const before = new Set(await fs.readdir(tmpDir));
+
+        const outTemplate = path.join(tmpDir, `subs-${Date.now()}-%(title)s.%(ext)s`);
+
+        // const tmpVtt = path.join(os.tmpdir(), `subs-${Date.now()}.%(ext)s`);
         // const tmpVtt = path.join(os.tmpdir(), "%(title)s.%(ext)s");
         await ytdlp(url, {
         skipDownload: true,
         writeAutoSub: true,
         subLang: "en",
         subFormat: "vtt",
+        output: outTemplate,
         writeSub: true,
-        output: tmpVtt,
         // verbose: false,
         });
-        console.log(await fs.readdir(os.tmpdir()));
-        // const tmpDir = os.tmpdir();
-        // const files = await fs.readdir(tmpDir);
-        // console.log(files);
-        console.log(tmpVtt);
 
-        const manual = tmpVtt.replace("%(ext)s", "en.vtt");
-        const auto = tmpVtt.replace("%(ext)s", "auto.en.vtt");
-        // console.log(vttPath);
+        const after = await fs.readdir(tmpDir);
+        console.log(after);
+        const newVtts = after.filter(f => f.endsWith(".vtt") && !before.has(f)).map(f => path.join(tmpDir, f));
 
-        let vttRaw: string;
-        try {
-            vttRaw = await fs.readFile(manual, "utf8");
-        } catch (err: any) {
-            vttRaw = await fs.readFile(auto, "utf8");
-            console.error(err);
+        console.log(newVtts);
+
+        // console.log(outTemplate);
+        if(newVtts.length === 0) {
+            throw new Error("yt-dlp produced no VTT subtitles");
         }
 
-        try { await fs.unlink(manual); } catch {}
-        try { await fs.unlink(auto); } catch {}
-        // const vttRaw = await fs.readFile(`${tmpDir}/Me\ at\ the\ zoo.en.vtt`, "utf8");
-        // const vttRaw = await fs.readFile(`${vttPath}`, "utf8");
-        // await fs.unlink(vttPath);
+        const vttWithTimes = await Promise.all(
+            newVtts.map(async p => ({
+                path: p,
+                mtime: (await fs.stat(p)).mtimeMs,
+            }))
+        );
 
-        // const cues = (webvtt.parse(vttRaw).cues as Array<{ text: string }>).map(c => c.text).join("\n");
-        // return NextResponse.json({ transcript: cues });
+        vttWithTimes.sort((a, b) => b.mtime - a.mtime);
+
+        const vttPath = vttWithTimes[0].path;
+
+        const vttRaw = await fs.readFile(vttPath, "utf8");
+        // cleanup subtitle file so future runs work
+        await fs.unlink(vttPath);
         return NextResponse.json({ transcript: vttRaw })
     } catch (err: any) {
         console.error("Transcript error:", err);
