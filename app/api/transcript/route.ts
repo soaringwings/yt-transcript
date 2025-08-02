@@ -31,10 +31,10 @@ export async function POST(request: Request) {
         await ytdlp(url, {
         skipDownload: true,
         writeAutoSub: true,
-        subLang: "en.*,en",
+        // subLang: "en",
         subFormat: "vtt",
-        // output: outTemplate,
-        writeSub: true,
+        output: outTemplate,
+        // writeSub: true,
         // verbose: false,
         });
 
