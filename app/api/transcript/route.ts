@@ -9,7 +9,7 @@ import os from "os";
 
 // import ytdlp from "youtube-dl-exec";
 import { create as createYoutubeDl } from "youtube-dl-exec";
-const ytdlp = createYoutubeDl(path.join(process.cwd(), "yt-dlp/yt-dlp_linux"));
+const ytdlp = createYoutubeDl(path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"));
 
 export async function POST(request: Request) {
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         await ytdlp(url, {
         skipDownload: true,
         writeAutoSub: true,
-        subLang: "en",
+        subLang: "en.*,en",
         subFormat: "vtt",
         output: outTemplate,
         writeSub: true,
