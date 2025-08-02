@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         writeAutoSub: true,
         subLang: "en.*,en",
         subFormat: "vtt",
-        output: outTemplate,
+        // output: outTemplate,
         writeSub: true,
         // verbose: false,
         });
