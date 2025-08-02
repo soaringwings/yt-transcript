@@ -9,7 +9,7 @@ import os from "os";
 
 // import ytdlp from "youtube-dl-exec";
 import { create as createYoutubeDl } from "youtube-dl-exec";
-const ytdlp = createYoutubeDl(path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp"));
+const ytdlp = createYoutubeDl(path.join(process.cwd(), "yt-dlp/yt-dlp_linux"));
 
 export async function POST(request: Request) {
 
@@ -39,10 +39,14 @@ export async function POST(request: Request) {
         });
 
         const after = await fs.readdir(tmpDir);
-        console.log(after);
+        // console.log(after);
         const newVtts = after.filter(f => f.endsWith(".vtt") && !before.has(f)).map(f => path.join(tmpDir, f));
 
-        console.log(newVtts);
+        // console.log(newVtts);
+        const binPath = path.join(process.cwd(), "node_modules/youtube-dl-exec/bin/yt-dlp");
+        console.log("yt-dlp bin:", binPath);
+        const ver = await ytdlp("--version");
+        console.log("yt-dlp version:", ver);
 
         // console.log(outTemplate);
         if(newVtts.length === 0) {
