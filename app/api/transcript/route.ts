@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     // 1. get metadata only
-    const raw = await ytdlp(url, { dumpJson: true, skipDownload: true });
+    const raw = await ytdlp(url, { dumpJson: true, skipDownload: true, convertSubs: "vtt" });
     const meta = typeof raw === "string" ? JSON.parse(raw) : raw;
 
     // 2. pick English captions (manual > auto)
